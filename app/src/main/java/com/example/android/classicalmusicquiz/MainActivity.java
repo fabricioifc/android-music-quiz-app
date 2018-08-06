@@ -24,46 +24,39 @@ import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
 
-
-    private static final String GAME_FINISHED = "game_finished";
-
+    private static final String JOGO_FINALIZADO = "jogo_finalizado";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        TextView highScoreTextView = (TextView) findViewById(R.id.highscoreText);
+        TextView maiorPontuacaoView = (TextView) findViewById(R.id.highscoreText);
 
-        // Get the high and max score.
+        // Pegar a maior e menor pontuação do jogador
         int highScore = QuizUtils.getHighScore(this);
-        int maxScore = Sample.getAllSampleIDs(this).size() - 1;
+        int maxScore = Quiz.getAllSampleIDs(this).size() - 1;
 
-        // Set the high score text.
-        String highScoreText = getString(R.string.high_score, highScore, maxScore);
-        highScoreTextView.setText(highScoreText);
+        // Setar a maior pontuação como texto
+        String maiorPontuacaoTxt = getString(R.string.high_score, highScore, maxScore);
+        maiorPontuacaoView.setText(maiorPontuacaoTxt);
 
-        // If the game is over, show the game finished UI.
-        if(getIntent().hasExtra(GAME_FINISHED)){
-            TextView gameFinishedTextView = (TextView) findViewById(R.id.gameResult);
-            TextView yourScoreTextView = (TextView) findViewById(R.id.resultScore);
+        // Quando o jogo terminar, mostrar a tela com detalhes do jogo
+        if(getIntent().hasExtra(JOGO_FINALIZADO)){
+            TextView jogoFinalizadoView = (TextView) findViewById(R.id.gameResult);
+            TextView suaPontuacaoView = (TextView) findViewById(R.id.resultScore);
 
             Integer yourScore = QuizUtils.getCurrentScore(this);
             String yourScoreText = getString(R.string.score_result, yourScore, maxScore);
-            yourScoreTextView.setText(yourScoreText);
+            suaPontuacaoView.setText(yourScoreText);
 
-            gameFinishedTextView.setVisibility(View.VISIBLE);
-            yourScoreTextView.setVisibility(View.VISIBLE);
+            jogoFinalizadoView.setVisibility(View.VISIBLE);
+            suaPontuacaoView.setVisibility(View.VISIBLE);
         }
     }
 
-
-    /**
-     * The OnClick method for the New Game button that starts a new game.
-     * @param view The New Game button.
-     */
     public void newGame(View view) {
-        Intent quizIntent = new Intent(this, QuizActivity.class);
-        startActivity(quizIntent);
+        Intent quizTela = new Intent(this, QuizActivity.class);
+        startActivity(quizTela);
     }
 }

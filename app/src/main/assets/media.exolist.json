@@ -1,10 +1,10 @@
 [
   {
-    "name": "Toccata and Fugue in D minor",
+    "name": "AC & DC - Back In Black.mp3",
     "id": 0,
-    "uri": "asset:///toccata_fugue.mp3",
-    "composer": "Johann Sebastian Bach",
-    "albumArtID": "bach"
+    "uri": "asset:///acdc_back_in_black.mp3",
+    "composer": "AC/DC",
+    "albumArtID": "acdc"
   },
   {
     "name": "Fur Elise",

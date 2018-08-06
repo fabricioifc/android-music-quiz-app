@@ -59,16 +59,16 @@ import java.util.ArrayList;
 
 public class QuizActivity extends AppCompatActivity implements View.OnClickListener, ExoPlayer.EventListener {
 
-    private static final int CORRECT_ANSWER_DELAY_MILLIS = 1000;
-    private static final String REMAINING_SONGS_KEY = "remaining_songs";
+    private static final int CORRETA_RESPOSTA_TEMPO = 1000;
+    private static final String MUSICA_REMANESCENTE_CHAVE = "musicas_remanescentes";
     private static final String TAG = QuizActivity.class.getSimpleName();
     private int[] mButtonIDs = {R.id.buttonA, R.id.buttonB, R.id.buttonC, R.id.buttonD};
-    private ArrayList<Integer> mRemainingSampleIDs;
-    private ArrayList<Integer> mQuestionSampleIDs;
-    private int mAnswerSampleID;
-    private int mCurrentScore;
-    private int mHighScore;
-    private Button[] mButtons;
+    private ArrayList<Integer> mRemanescenteIDs;
+    private ArrayList<Integer> mQuestoesIDs;
+    private int mRespostaID;
+    private int mPontuacaoCorreta;
+    private int mMaiorPontuacao;
+    private Button[] mBotoes;
     private SimpleExoPlayer mExoPlayer;
     private SimpleExoPlayerView mPlayerView;
     private static MediaSessionCompat mMediaSession;
@@ -86,51 +86,51 @@ public class QuizActivity extends AppCompatActivity implements View.OnClickListe
         mPlayerView = (SimpleExoPlayerView) findViewById(R.id.playerView);
 
 
-        boolean isNewGame = !getIntent().hasExtra(REMAINING_SONGS_KEY);
+        boolean isNovoJogo = !getIntent().hasExtra(MUSICA_REMANESCENTE_CHAVE);
 
         // If it's a new game, set the current score to 0 and load all samples.
-        if (isNewGame) {
+        if (isNovoJogo) {
             QuizUtils.setCurrentScore(this, 0);
-            mRemainingSampleIDs = Sample.getAllSampleIDs(this);
+            mRemanescenteIDs = Quiz.getAllSampleIDs(this);
             // Otherwise, get the remaining songs from the Intent.
         } else {
-            mRemainingSampleIDs = getIntent().getIntegerArrayListExtra(REMAINING_SONGS_KEY);
+            mRemanescenteIDs = getIntent().getIntegerArrayListExtra(MUSICA_REMANESCENTE_CHAVE);
         }
 
         // Get current and high scores.
-        mCurrentScore = QuizUtils.getCurrentScore(this);
-        mHighScore = QuizUtils.getHighScore(this);
+        mPontuacaoCorreta = QuizUtils.getCurrentScore(this);
+        mMaiorPontuacao = QuizUtils.getHighScore(this);
 
         // Generate a question and get the correct answer.
-        mQuestionSampleIDs = QuizUtils.generateQuestion(mRemainingSampleIDs);
-        mAnswerSampleID = QuizUtils.getCorrectAnswerID(mQuestionSampleIDs);
+        mQuestoesIDs = QuizUtils.generateQuestion(mRemanescenteIDs);
+        mRespostaID = QuizUtils.getCorrectAnswerID(mQuestoesIDs);
 
         // Load the question mark as the background image until the user answers the question.
         mPlayerView.setDefaultArtwork(BitmapFactory.decodeResource
                 (getResources(), R.drawable.question_mark));
 
         // If there is only one answer left, end the game.
-        if (mQuestionSampleIDs.size() < 2) {
+        if (mQuestoesIDs.size() < 2) {
             QuizUtils.endGame(this);
             finish();
         }
 
         // Initialize the buttons with the composers names.
-        mButtons = initializeButtons(mQuestionSampleIDs);
+        mBotoes = initializeButtons(mQuestoesIDs);
 
         // Initialize the Media Session.
         initializeMediaSession();
 
-        Sample answerSample = Sample.getSampleByID(this, mAnswerSampleID);
+        Quiz answerQuiz = Quiz.getSampleByID(this, mRespostaID);
 
-        if (answerSample == null) {
+        if (answerQuiz == null) {
             Toast.makeText(this, getString(R.string.sample_not_found_error),
                     Toast.LENGTH_SHORT).show();
             return;
         }
 
         // Initialize the player.
-        initializePlayer(Uri.parse(answerSample.getUri()));
+        initializePlayer(Uri.parse(answerQuiz.getUri()));
     }
 
     /**
@@ -180,11 +180,11 @@ public class QuizActivity extends AppCompatActivity implements View.OnClickListe
         Button[] buttons = new Button[mButtonIDs.length];
         for (int i = 0; i < answerSampleIDs.size(); i++) {
             Button currentButton = (Button) findViewById(mButtonIDs[i]);
-            Sample currentSample = Sample.getSampleByID(this, answerSampleIDs.get(i));
+            Quiz currentQuiz = Quiz.getSampleByID(this, answerSampleIDs.get(i));
             buttons[i] = currentButton;
             currentButton.setOnClickListener(this);
-            if (currentSample != null) {
-                currentButton.setText(currentSample.getComposer());
+            if (currentQuiz != null) {
+                currentButton.setText(currentQuiz.getComposer());
             }
         }
         return buttons;
@@ -294,27 +294,27 @@ public class QuizActivity extends AppCompatActivity implements View.OnClickListe
 
         // Get the index of the pressed button
         int userAnswerIndex = -1;
-        for (int i = 0; i < mButtons.length; i++) {
+        for (int i = 0; i < mBotoes.length; i++) {
             if (pressedButton.getId() == mButtonIDs[i]) {
                 userAnswerIndex = i;
             }
         }
 
         // Get the ID of the sample that the user selected.
-        int userAnswerSampleID = mQuestionSampleIDs.get(userAnswerIndex);
+        int userAnswerSampleID = mQuestoesIDs.get(userAnswerIndex);
 
         // If the user is correct, increase there score and update high score.
-        if (QuizUtils.userCorrect(mAnswerSampleID, userAnswerSampleID)) {
-            mCurrentScore++;
-            QuizUtils.setCurrentScore(this, mCurrentScore);
-            if (mCurrentScore > mHighScore) {
-                mHighScore = mCurrentScore;
-                QuizUtils.setHighScore(this, mHighScore);
+        if (QuizUtils.userCorrect(mRespostaID, userAnswerSampleID)) {
+            mPontuacaoCorreta++;
+            QuizUtils.setCurrentScore(this, mPontuacaoCorreta);
+            if (mPontuacaoCorreta > mMaiorPontuacao) {
+                mMaiorPontuacao = mPontuacaoCorreta;
+                QuizUtils.setHighScore(this, mMaiorPontuacao);
             }
         }
 
         // Remove the answer sample from the list of all samples, so it doesn't get asked again.
-        mRemainingSampleIDs.remove(Integer.valueOf(mAnswerSampleID));
+        mRemanescenteIDs.remove(Integer.valueOf(mRespostaID));
 
         // Wait some time so the user can see the correct answer, then go to the next question.
         final Handler handler = new Handler();
@@ -323,11 +323,11 @@ public class QuizActivity extends AppCompatActivity implements View.OnClickListe
             public void run() {
                 mExoPlayer.stop();
                 Intent nextQuestionIntent = new Intent(QuizActivity.this, QuizActivity.class);
-                nextQuestionIntent.putExtra(REMAINING_SONGS_KEY, mRemainingSampleIDs);
+                nextQuestionIntent.putExtra(MUSICA_REMANESCENTE_CHAVE, mRemanescenteIDs);
                 finish();
                 startActivity(nextQuestionIntent);
             }
-        }, CORRECT_ANSWER_DELAY_MILLIS);
+        }, CORRETA_RESPOSTA_TEMPO);
     }
 
     /**
@@ -335,22 +335,22 @@ public class QuizActivity extends AppCompatActivity implements View.OnClickListe
      * show the correct answer.
      */
     private void showCorrectAnswer() {
-        mPlayerView.setDefaultArtwork(Sample.getComposerArtBySampleID(this, mAnswerSampleID));
-        for (int i = 0; i < mQuestionSampleIDs.size(); i++) {
-            int buttonSampleID = mQuestionSampleIDs.get(i);
+        mPlayerView.setDefaultArtwork(Quiz.getComposerArtBySampleID(this, mRespostaID));
+        for (int i = 0; i < mQuestoesIDs.size(); i++) {
+            int buttonSampleID = mQuestoesIDs.get(i);
 
-            mButtons[i].setEnabled(false);
+            mBotoes[i].setEnabled(false);
 
-            if (buttonSampleID == mAnswerSampleID) {
-                mButtons[i].getBackground().setColorFilter(ContextCompat.getColor
+            if (buttonSampleID == mRespostaID) {
+                mBotoes[i].getBackground().setColorFilter(ContextCompat.getColor
                                 (this, android.R.color.holo_green_light),
                         PorterDuff.Mode.MULTIPLY);
-                mButtons[i].setTextColor(Color.WHITE);
+                mBotoes[i].setTextColor(Color.WHITE);
             } else {
-                mButtons[i].getBackground().setColorFilter(ContextCompat.getColor
+                mBotoes[i].getBackground().setColorFilter(ContextCompat.getColor
                                 (this, android.R.color.holo_red_light),
                         PorterDuff.Mode.MULTIPLY);
-                mButtons[i].setTextColor(Color.WHITE);
+                mBotoes[i].setTextColor(Color.WHITE);
             }
         }
     }

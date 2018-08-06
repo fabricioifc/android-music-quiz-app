@@ -26,13 +26,13 @@ import java.util.Random;
 
 class QuizUtils {
 
-    private static final String CURRENT_SCORE_KEY = "current_score";
-    private static final String HIGH_SCORE_KEY = "high_score";
-    private static final String GAME_FINISHED = "game_finished";
-    private static final int NUM_ANSWERS = 4;
+    private static final String PONTUACAO_CORRENTE_CHAVE = "pontuacao_corrente";
+    private static final String PONTUACAO_MAIS_ALTA_CHAVE = "maior_pontuacao";
+    private static final String JOGO_FINALIZADO = "jogo_finalizado";
+    private static final int QTD_RESPOSTAS = 4;
 
     /**
-     * Generates an ArrayList of Integers that contains IDs to NUM_ANSWERS samples. These samples
+     * Generates an ArrayList of Integers that contains IDs to QTD_RESPOSTAS samples. These samples
      * constitute the possible answers to the question.
      * @param remainingSampleIDs The ArrayList of Integers which contains the IDs of all
      *                           samples that haven't been used yet.
@@ -45,8 +45,8 @@ class QuizUtils {
 
         ArrayList<Integer> answers = new ArrayList<>();
 
-        // Pick the first four random Sample ID's.
-        for(int i = 0; i < NUM_ANSWERS; i++){
+        // Pick the first four random Quiz ID's.
+        for(int i = 0; i < QTD_RESPOSTAS; i++){
             if(i < remainingSampleIDs.size()) {
                 answers.add(remainingSampleIDs.get(i));
             }
@@ -63,7 +63,7 @@ class QuizUtils {
     static int getHighScore(Context context){
         SharedPreferences mPreferences = context.getSharedPreferences(
                 context.getString(R.string.preference_file_key), Context.MODE_PRIVATE);
-        return mPreferences.getInt(HIGH_SCORE_KEY, 0);
+        return mPreferences.getInt(PONTUACAO_MAIS_ALTA_CHAVE, 0);
     }
 
     /**
@@ -75,7 +75,7 @@ class QuizUtils {
         SharedPreferences mPreferences = context.getSharedPreferences(
                 context.getString(R.string.preference_file_key), Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = mPreferences.edit();
-        editor.putInt(HIGH_SCORE_KEY, highScore);
+        editor.putInt(PONTUACAO_MAIS_ALTA_CHAVE, highScore);
         editor.apply();
     }
 
@@ -87,7 +87,7 @@ class QuizUtils {
     static int getCurrentScore(Context context){
         SharedPreferences mPreferences = context.getSharedPreferences(
                 context.getString(R.string.preference_file_key), Context.MODE_PRIVATE);
-        return mPreferences.getInt(CURRENT_SCORE_KEY, 0);
+        return mPreferences.getInt(PONTUACAO_CORRENTE_CHAVE,0);
     }
 
     /**
@@ -99,7 +99,7 @@ class QuizUtils {
         SharedPreferences mPreferences = context.getSharedPreferences(
                 context.getString(R.string.preference_file_key), Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = mPreferences.edit();
-        editor.putInt(CURRENT_SCORE_KEY, currentScore);
+        editor.putInt(PONTUACAO_CORRENTE_CHAVE, currentScore);
         editor.apply();
     }
 
@@ -131,7 +131,7 @@ class QuizUtils {
      */
     static void endGame(Context context){
         Intent endGame = new Intent(context, MainActivity.class);
-        endGame.putExtra(GAME_FINISHED, true);
+        endGame.putExtra(JOGO_FINALIZADO, true);
         context.startActivity(endGame);
     }
 }
